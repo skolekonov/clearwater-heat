@@ -125,20 +125,20 @@ resources:
   mgmt_port:
     type: OS::Neutron::Port
     properties:
-      network_id: { get_param: private_mgmt_net_id }
+      network: { get_param: private_mgmt_net_id }
       security_groups:
         - { get_param: base_mgmt_security_group }
 
   mgmt_floating_ip:
     type: OS::Neutron::FloatingIP
     properties:
-      floating_network_id: { get_param: public_mgmt_net_id }
+      floating_network: { get_param: public_mgmt_net_id }
       port_id: { get_resource: mgmt_port }
 
   sig_port:
     type: OS::Neutron::Port
     properties:
-      network_id: { get_param: private_sig_net_id }
+      network: { get_param: private_sig_net_id }
       security_groups:
         - { get_param: ralf_sig_security_group }
 
@@ -173,6 +173,7 @@ resources:
             # Log all output to file.
             exec > >(tee -a /var/log/clearwater-heat-ralf.log) 2>&1
             set -x
+            mtu=$(ip l show eth0 | awk '/mtu/ {print $5}')
 
             # Set up the signaling network namespace on each boot by creating an init file and
             # linking to it from runlevel 2 and 3
@@ -191,6 +192,7 @@ resources:
             ip netns exec signaling ip link set dev lo up
             ip netns exec signaling ip addr add __private_sig_ip__/$(echo __private_sig_cidr__ | cut -d / -f 2) dev eth1
             ip netns exec signaling ip link set dev eth1 up
+            ip netns exec signaling ip link set dev eth1 mtu $mtu
             ip netns exec signaling ip route add default via __private_sig_gateway__
             EOF
 

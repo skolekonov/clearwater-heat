@@ -86,7 +86,7 @@ resources:
     type: OS::Neutron::Subnet
     properties:
       name: { get_param: private_net_name }
-      network_id: { get_resource: private_net }
+      network: { get_resource: private_net }
       ip_version: { get_param: private_net_ip_version }
       cidr: { get_param: private_net_cidr }
       dns_nameservers: [ { get_param: dns_ip } ]
@@ -104,13 +104,13 @@ resources:
     type: OS::Neutron::RouterGateway
     properties:
       router_id: { get_resource: router }
-      network_id: { get_param: public_net_id }
+      network: { get_param: public_net_id }
 
   router_interface:
     type: OS::Neutron::RouterInterface
     properties:
-      router_id: { get_resource: router }
-      subnet_id: { get_resource: private_subnet }
+      router: { get_resource: router }
+      subnet: { get_resource: private_subnet }
 
 outputs:
   private_net:
